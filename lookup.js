@@ -45,6 +45,12 @@ function clearCard() {
 async function findItem() {
   if (findButton.disabled) return;
   const name = itemInput.value.trim().toLowerCase();
+  // An empty ask never reaches the server and never changes the record.
+  if (!name) {
+    statusLine.textContent = String(undefined);
+    statusLine.dataset.state = "idle";
+    return;
+  }
   statusLine.textContent = "Loading…";
   statusLine.dataset.state = "loading";
   findButton.disabled = true;
