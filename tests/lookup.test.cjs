@@ -42,3 +42,28 @@ test("empty and whitespace asks do not fetch or alter a populated card", async (
   assert.equal(app.elements["card-price"].textContent, "50");
   assert.deepEqual(app.rows(), [["pen", "50", "1"]]);
 });
+
+test("a network failure clears the card without losing prior successful rows", async () => {
+  let online = true;
+  const app = page((url) => online ? available(url) : Promise.reject(new TypeError("Connection refused")));
+  await app.find("pen");
+  app.elements.find.disabled = false;
+  online = false;
+  await app.find("copy");
+  assert.equal(app.elements.status.textContent, "The server is not answering.");
+  assert.equal(app.elements["card-name"].textContent, "");
+  assert.equal(app.elements["card-price"].textContent, "");
+  assert.deepEqual(app.rows(), [["pen", "50", "1"]]);
+  assert.equal(app.elements.found.textContent, "1");
+  assert.equal(app.elements.dearest.textContent, "50");
+});
+
+test("HTTP errors and malformed replies cannot add a slip row", async () => {
+  for (const response of [reply("pen", 999, 500), reply("pen", "50"), reply("pen", -1), reply("pen", Infinity), reply("", 50), { ok: true, status: 200, json: async () => { throw new SyntaxError(); } }]) {
+    const app = page(async () => response);
+    await app.find("pen");
+    assert.equal(app.elements.status.textContent, "The server is not answering.");
+    assert.deepEqual(app.rows(), []);
+    assert.equal(app.elements.found.textContent, "0");
+  }
+});

@@ -55,22 +55,34 @@ async function findItem() {
   statusLine.dataset.state = "loading";
   findButton.disabled = true;
   card.setAttribute("aria-busy", "true");
-  // Encode the name as one query value; prices always come from the reply.
-  const response = await fetch(`/api/price?item=${encodeURIComponent(name)}`);
-  if (response.status === 404) {
-    const missing = await response.json();
+
+  try {
+    // Encode the name as one query value; prices always come from the reply.
+    const response = await fetch(`/api/price?item=${encodeURIComponent(name)}`);
+    if (response.status === 404) {
+      const missing = await response.json();
+      clearCard();
+      statusLine.textContent = `${missing.item} is not in the shop`;
+      statusLine.dataset.state = "error";
+      return;
+    }
+    if (!response.ok) throw new Error("The lookup request failed.");
+    const data = await response.json();
+    // A broken reply follows the same recovery path as a broken connection.
+    if (typeof data.item !== "string" || !data.item ||
+        typeof data.price !== "number" || !Number.isFinite(data.price) || data.price < 0) {
+      throw new Error("The server returned an invalid item.");
+    }
+    cardName.textContent = data.item;
+    cardPrice.textContent = String(data.price);
+    statusLine.textContent = `${data.item}: Rs ${data.price}`;
+    statusLine.dataset.state = "success";
+    recordItem(data.item, data.price);
+  } catch (error) {
     clearCard();
-    statusLine.textContent = `${missing.item} is not in the shop`;
+    statusLine.textContent = "The server is not answering.";
     statusLine.dataset.state = "error";
-    return;
   }
-  if (!response.ok) throw new Error("The lookup request failed.");
-  const data = await response.json();
-  cardName.textContent = data.item;
-  cardPrice.textContent = String(data.price);
-  statusLine.textContent = `${data.item}: Rs ${data.price}`;
-  statusLine.dataset.state = "success";
-  recordItem(data.item, data.price);
 }
 
 // Store the function reference; do not run a lookup while the page loads.
