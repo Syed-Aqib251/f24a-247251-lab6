@@ -67,3 +67,33 @@ test("HTTP errors and malformed replies cannot add a slip row", async () => {
     assert.equal(app.elements.found.textContent, "0");
   }
 });
+
+test("Loading disables Find, ignores duplicate asks, and finally restores it", async () => {
+  let resolveReply;
+  const pendingReply = new Promise((resolve) => { resolveReply = resolve; });
+  const app = page(() => pendingReply);
+  const pending = app.find("pen");
+  assert.equal(app.elements.status.textContent, "Loading…");
+  assert.equal(app.elements.find.disabled, true);
+  assert.equal(app.elements.card.attributes["aria-busy"], "true");
+  await app.find("copy");
+  assert.equal(app.calls.length, 1);
+  resolveReply(reply("pen", 50));
+  await pending;
+  assert.equal(app.elements.find.disabled, false);
+  assert.equal(app.elements.card.attributes["aria-busy"], "false");
+});
+
+test("Find is restored after success, an unknown item, and a rejected request", async () => {
+  const app = page(available);
+  await app.find("pen");
+  assert.equal(app.elements.find.disabled, false);
+  await app.find("ruler");
+  assert.equal(app.elements.find.disabled, false);
+  await app.find("tea");
+  assert.equal(app.elements.find.disabled, false);
+  const offline = page(() => Promise.reject(new Error("offline")));
+  await offline.find("pen");
+  assert.equal(offline.elements.find.disabled, false);
+  assert.equal(offline.elements.card.attributes["aria-busy"], "false");
+});

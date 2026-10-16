@@ -82,6 +82,10 @@ async function findItem() {
     clearCard();
     statusLine.textContent = "The server is not answering.";
     statusLine.dataset.state = "error";
+  } finally {
+    // Success, unknown items and connection failures all release the button.
+    findButton.disabled = false;
+    card.setAttribute("aria-busy", "false");
   }
 }
 
