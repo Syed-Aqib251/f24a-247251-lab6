@@ -27,6 +27,17 @@
       <div class="desk">
         <section class="panel" aria-labelledby="lookup-heading">
           <div class="section-top"><span class="section-index" aria-hidden="true">01</span><h2 id="lookup-heading">Find an item</h2></div>
+          <section id="card" class="card" aria-labelledby="card-label" aria-busy="false">
+            <h2 id="card-label" class="card-label">Item card</h2>
+            <div class="card-placeholder" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 9h10M7 13h6"/></svg>
+              <span>Your next find appears here.</span>
+            </div>
+            <div class="card-details">
+              <p id="card-name"></p>
+              <p class="price"><span class="currency">Rs</span><span id="card-price"></span></p>
+            </div>
+          </section>
         </section>
       </div>
       <p class="desk-note">Prices come from the counter server. Refresh the page to start a fresh slip.</p>
