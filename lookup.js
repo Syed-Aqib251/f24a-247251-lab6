@@ -15,6 +15,13 @@ async function findItem() {
   statusLine.dataset.state = "loading";
   findButton.disabled = true;
   card.setAttribute("aria-busy", "true");
+  // Encode the name as one query value; prices always come from the reply.
+  const response = await fetch(`/api/price?item=${encodeURIComponent(name)}`);
+  const data = await response.json();
+  cardName.textContent = data.item;
+  cardPrice.textContent = String(data.price);
+  statusLine.textContent = `${data.item}: Rs ${data.price}`;
+  statusLine.dataset.state = "success";
 }
 
 // Store the function reference; do not run a lookup while the page loads.
