@@ -37,6 +37,11 @@ function recordItem(item, price) {
   dearest.textContent = String(Math.max(0, ...Array.from(lookups.values(), (entry) => entry.price)));
 }
 
+function clearCard() {
+  cardName.textContent = "";
+  cardPrice.textContent = "";
+}
+
 async function findItem() {
   if (findButton.disabled) return;
   const name = itemInput.value.trim().toLowerCase();
@@ -46,6 +51,14 @@ async function findItem() {
   card.setAttribute("aria-busy", "true");
   // Encode the name as one query value; prices always come from the reply.
   const response = await fetch(`/api/price?item=${encodeURIComponent(name)}`);
+  if (response.status === 404) {
+    const missing = await response.json();
+    clearCard();
+    statusLine.textContent = `${missing.item} is not in the shop`;
+    statusLine.dataset.state = "error";
+    return;
+  }
+  if (!response.ok) throw new Error("The lookup request failed.");
   const data = await response.json();
   cardName.textContent = data.item;
   cardPrice.textContent = String(data.price);
