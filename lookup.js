@@ -9,7 +9,12 @@ const cardName = document.getElementById("card-name");
 const cardPrice = document.getElementById("card-price");
 
 async function findItem() {
+  if (findButton.disabled) return;
   const name = itemInput.value.trim().toLowerCase();
+  statusLine.textContent = "Loading…";
+  statusLine.dataset.state = "loading";
+  findButton.disabled = true;
+  card.setAttribute("aria-busy", "true");
 }
 
 // Store the function reference; do not run a lookup while the page loads.
