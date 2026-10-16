@@ -7,6 +7,21 @@ const statusLine = document.getElementById("status");
 const card = document.getElementById("card");
 const cardName = document.getElementById("card-name");
 const cardPrice = document.getElementById("card-price");
+const slip = document.getElementById("slip");
+const found = document.getElementById("found");
+const dearest = document.getElementById("dearest");
+
+function recordItem(item, price) {
+  const row = document.createElement("tr");
+  for (const value of [item, price, 1]) {
+    const cell = document.createElement("td");
+    cell.textContent = String(value);
+    row.append(cell);
+  }
+  slip.append(row);
+  found.textContent = String(slip.children.length);
+  dearest.textContent = String(Math.max(Number(dearest.textContent), price));
+}
 
 async function findItem() {
   if (findButton.disabled) return;
@@ -22,6 +37,7 @@ async function findItem() {
   cardPrice.textContent = String(data.price);
   statusLine.textContent = `${data.item}: Rs ${data.price}`;
   statusLine.dataset.state = "success";
+  recordItem(data.item, data.price);
 }
 
 // Store the function reference; do not run a lookup while the page loads.
