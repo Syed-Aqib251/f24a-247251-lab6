@@ -10,17 +10,31 @@ const cardPrice = document.getElementById("card-price");
 const slip = document.getElementById("slip");
 const found = document.getElementById("found");
 const dearest = document.getElementById("dearest");
+// Use the server's canonical name as the key so repeats share one row.
+const lookups = new Map();
 
 function recordItem(item, price) {
-  const row = document.createElement("tr");
-  for (const value of [item, price, 1]) {
-    const cell = document.createElement("td");
-    cell.textContent = String(value);
-    row.append(cell);
+  let entry = lookups.get(item);
+  if (entry) {
+    entry.times += 1;
+    entry.price = price;
+    entry.priceCell.textContent = String(price);
+    entry.timesCell.textContent = String(entry.times);
+  } else {
+    const row = document.createElement("tr");
+    const nameCell = document.createElement("td");
+    const priceCell = document.createElement("td");
+    const timesCell = document.createElement("td");
+    nameCell.textContent = item;
+    priceCell.textContent = String(price);
+    timesCell.textContent = "1";
+    row.append(nameCell, priceCell, timesCell);
+    slip.append(row);
+    entry = { price, times: 1, priceCell, timesCell };
+    lookups.set(item, entry);
   }
-  slip.append(row);
-  found.textContent = String(slip.children.length);
-  dearest.textContent = String(Math.max(Number(dearest.textContent), price));
+  found.textContent = String(lookups.size);
+  dearest.textContent = String(Math.max(0, ...Array.from(lookups.values(), (entry) => entry.price)));
 }
 
 async function findItem() {
